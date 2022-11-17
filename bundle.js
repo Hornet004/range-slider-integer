@@ -1,18 +1,8 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-const range_slider_integer = require('..')
-
-const opts = {min:0, max: 10}
-const rsi = range_slider_integer (opts)
-
-document.body.append(rsi)
-
-
-
-},{"..":4}],2:[function(require,module,exports){
 module.exports = input_interger
 
 
-function input_interger(opts) {
+function input_interger(opts, notify) {
 
     const {min = 0, max = 1000} = opts
 
@@ -33,24 +23,28 @@ function input_interger(opts) {
     shadow.append(input, style)
     return el
 
-}
+    function handle_onkeyup(e, input, min, max){
 
-function handle_onkeyup(e, input, min, max){
-
-    const val = Number(e.target.value)
-    // console.log(val) 
-    const val_len = val.toString().length
-    const min_len = min.toString().length
+        const val = Number(e.target.value)
+        console.log(val) 
+        const val_len = val.toString().length
+        const min_len = min.toString().length
+        
     
+        if (val > max) input.value = max
+        else if (val_len === min_len && val < min) input.value = min
+        // console.log(val)
+        notify({type: 'update', body: val})
+    }
+    function handle_onmouseleave(e, input, min){
+        
+        const val = Number(e.target.value)
+        if (val < min) input.value = ''
+    }
 
-    if (val > max) input.value = max
-    else if (val_len === min_len && val < min) input.value = min
 }
-function handle_onmouseleave(e, input, min){
-    
-    const val = Number(e.target.value)
-    if (val < min) input.value = ''
-}
+
+
 
 function get_theme() {
     return`
@@ -96,10 +90,48 @@ function get_theme() {
 
 
 }
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
+const range_slider_integer = require('..')
+
+const opts = {min:0, max: 10}
+const rsi = range_slider_integer (opts)
+
+document.body.append(rsi)
+
+
+
+},{"..":3}],3:[function(require,module,exports){
+const rangeSlider = require('range-slider-david_ui')
+const input_interger = require('input-integer_01')
+
+module.exports = range_slider_integer
+
+function range_slider_integer(opts) {
+
+
+    const el = document.createElement('div')
+    const shadow = el.attachShadow({mode: 'closed'})
+
+
+    const output = document.createElement('div')
+    output.innerText = 0
+    
+    const range = rangeSlider(opts, listen)
+    const input = input_interger(opts, listen)
+
+    shadow.append(range, input, output)
+    return el
+
+    function listen (message){
+        const {type, body} = message
+        if (type === 'update') output.innerText = body
+
+    }
+}
+},{"input-integer_01":1,"range-slider-david_ui":4}],4:[function(require,module,exports){
 module.exports = rangeSlider
 
-function rangeSlider(opts) {
+function rangeSlider(opts, notify) {
   const {min = 0, max = 1000} = opts
 
     const el = document.createElement('div')
@@ -141,6 +173,8 @@ function rangeSlider(opts) {
     function handle_input(e) {
       const val = Number(e.target.value)
       fill.style.width = `${(val/max)*100}%`
+      console.log(val)
+      notify({type: 'update', body: val})
     }
 
 
@@ -240,22 +274,4 @@ function get_theme() {
   
   `
 }
-},{}],4:[function(require,module,exports){
-const rangeSlider = require('range-slider-david_ui')
-const input_interger = require('input-integer_01')
-
-module.exports = range_slider_integer
-
-function range_slider_integer(opts) {
-
-
-    const el = document.createElement('div')
-    const shadow = el.attachShadow({mode: 'closed'})
-    
-    const range = rangeSlider(opts)
-    const input = input_interger(opts)
-
-    shadow.append(range, input)
-    return el
-}
-},{"input-integer_01":2,"range-slider-david_ui":3}]},{},[1]);
+},{}]},{},[2]);
