@@ -36,7 +36,7 @@ function get_theme() {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        height: 20vh;
+        height: 128px;
 
     }
     .output{
