@@ -11,12 +11,16 @@ function range_slider_integer(opts) {
 
 
     const output = document.createElement('div')
+    output.classList.add('output')
     output.innerText = 0
+
+    const style = document.createElement('style')
+    style.textContent = get_theme()
     
     const range = rangeSlider(opts, listen)
     const input = input_interger(opts, listen)
 
-    shadow.append(range, input, output)
+    shadow.append(range, input, output, style)
     return el
 
     function listen (message){
@@ -25,3 +29,26 @@ function range_slider_integer(opts) {
 
     }
 }
+
+function get_theme() {
+    return`
+    :host{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 20vh;
+
+    }
+    .output{
+        border: 1px solid red;
+        text-align: center;
+        width: 4em;
+        padding: 1em;
+        border-radius: 8px;
+    }
+    
+    
+    
+    `
+}
+
