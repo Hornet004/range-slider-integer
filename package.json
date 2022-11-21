@@ -28,7 +28,7 @@
     "budo": "^11.8.4"
   },
   "dependencies": {
-    "input-integer_01": "^0.0.2",
-    "range-slider-david_ui": "^0.0.1"
+    "input-integer_01": "^0.0.3",
+    "range-slider-david_ui": "^0.0.3"
   }
 }

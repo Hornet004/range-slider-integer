@@ -5,27 +5,50 @@ module.exports = range_slider_integer
 
 function range_slider_integer(opts) {
 
+    const state = {}
 
     const el = document.createElement('div')
     const shadow = el.attachShadow({mode: 'closed'})
 
 
-    const output = document.createElement('div')
-    output.classList.add('output')
-    output.innerText = 0
+    // const output = document.createElement('div')
+    // output.classList.add('output')
+    // output.innerText = 0
 
     const style = document.createElement('style')
     style.textContent = get_theme()
     
-    const range = rangeSlider(opts, listen)
-    const input = input_interger(opts, listen)
+    const range = rangeSlider(opts, protocol)
+    const input = input_interger(opts, protocol)
 
-    shadow.append(range, input, output, style)
+    shadow.append(range, input, style)
     return el
 
+    function protocol(message, notify) {
+        const {from} = message
+        state[from] = {value: 0, notify}
+        // console.log(message)
+        return listen
+    }
+
     function listen (message){
-        const {type, body} = message
-        if (type === 'update') output.innerText = body
+        const {from, type, data} = message
+        state[from].value = data
+        // console.log(state)
+        if (type === 'update') {
+            // output.innerText = data
+
+            var notify
+            if (from === 'range-slider-0') {
+                notify = state['input-integer-0'].notify
+
+            }
+          
+            else if (from === 'input-integer-0') {
+                notify = state['range-slider-0'].notify
+            }
+            notify({type, data})
+        }
 
     }
 }
@@ -33,22 +56,13 @@ function range_slider_integer(opts) {
 function get_theme() {
     return`
     :host{
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 128px;
-
-    }
-    .output{
-        border: 1px solid red;
-        text-align: center;
-        width: 4em;
-        padding: 1em;
-        border-radius: 8px;
-    }
-    
-    
-    
+        display: grid;
+        /* justify-content: space-between; */
+        height: 64px;
+        grid-template-columns: 14fr 2fr;
+        align-items: center;
+        justify-items: center;
+    }    
     `
 }
 

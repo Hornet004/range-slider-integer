@@ -1,10 +1,30 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const range_slider_integer = require('..')
+
+const opts = {min:0, max: 10}
+const rsi = range_slider_integer (opts)
+
+document.body.append(rsi)
+
+
+
+},{"..":4}],2:[function(require,module,exports){
 module.exports = input_interger
 
+var id = 0
 
-function input_interger(opts, notify) {
+function input_interger(opts, protocol) {
 
     const {min = 0, max = 1000} = opts
+    const name = `input-integer-${id++}`
+
+    const notify = protocol({from: name}, listen)
+    function listen(message){
+        const {type, data} = message
+        if (type === 'update') {
+          input.value = data
+        }
+    }
 
     const el = document.createElement('div')
     const shadow = el.attachShadow({mode : 'closed'})
@@ -26,20 +46,23 @@ function input_interger(opts, notify) {
     function handle_onkeyup(e, input, min, max){
 
         const val = Number(e.target.value)
-        console.log(val) 
+        // console.log(val) 
         const val_len = val.toString().length
         const min_len = min.toString().length
         
     
-        if (val > max) input.value = max
-        else if (val_len === min_len && val < min) input.value = min
+        
+        if (val_len === min_len && val < min) input.value = min
+        else if (val > max) input.value = max
+        
         // console.log(val)
-        notify({type: 'update', body: val})
+        notify({from: name, type: 'update', data: val})
     }
     function handle_onmouseleave(e, input, min){
         
         const val = Number(e.target.value)
         if (val < min) input.value = ''
+        
     }
 
 }
@@ -90,77 +113,24 @@ function get_theme() {
 
 
 }
-},{}],2:[function(require,module,exports){
-const range_slider_integer = require('..')
-
-const opts = {min:0, max: 10}
-const rsi = range_slider_integer (opts)
-
-document.body.append(rsi)
-
-
-
-},{"..":3}],3:[function(require,module,exports){
-const rangeSlider = require('range-slider-david_ui')
-const input_interger = require('input-integer_01')
-
-module.exports = range_slider_integer
-
-function range_slider_integer(opts) {
-
-
-    const el = document.createElement('div')
-    const shadow = el.attachShadow({mode: 'closed'})
-
-
-    const output = document.createElement('div')
-    output.classList.add('output')
-    output.innerText = 0
-
-    const style = document.createElement('style')
-    style.textContent = get_theme()
-    
-    const range = rangeSlider(opts, listen)
-    const input = input_interger(opts, listen)
-
-    shadow.append(range, input, output, style)
-    return el
-
-    function listen (message){
-        const {type, body} = message
-        if (type === 'update') output.innerText = body
-
-    }
-}
-
-function get_theme() {
-    return`
-    :host{
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 128px;
-
-    }
-    .output{
-        border: 1px solid red;
-        text-align: center;
-        width: 4em;
-        padding: 1em;
-        border-radius: 8px;
-    }
-    
-    
-    
-    `
-}
-
-
-},{"input-integer_01":1,"range-slider-david_ui":4}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 module.exports = rangeSlider
 
-function rangeSlider(opts, notify) {
+var id = 0
+function rangeSlider(opts, protocol) {
   const {min = 0, max = 1000} = opts
+
+    const name = `range-slider-${id++}`  
+    const notify = protocol({from: name}, listen)
+
+    function listen(message){
+      const {type, data} = message
+      if (type === 'update') {
+        slider.value = data
+
+        fill.style.width = `${(data/max)*100}%`
+      }
+    }
 
     const el = document.createElement('div')
     const shadow = el.attachShadow({mode: 'closed'})
@@ -186,8 +156,6 @@ function rangeSlider(opts, notify) {
     fill.classList.add('fill')
 
 
-
-
     //stylesheet
     const style = document.createElement('style')
     style.textContent = get_theme()
@@ -201,8 +169,8 @@ function rangeSlider(opts, notify) {
     function handle_input(e) {
       const val = Number(e.target.value)
       fill.style.width = `${(val/max)*100}%`
-      console.log(val)
-      notify({type: 'update', body: val})
+      // console.log(val)
+      notify({from: name,type: 'update', data: val})
     }
 
 
@@ -302,4 +270,74 @@ function get_theme() {
   
   `
 }
-},{}]},{},[2]);
+},{}],4:[function(require,module,exports){
+const rangeSlider = require('range-slider-david_ui')
+const input_interger = require('input-integer_01')
+
+module.exports = range_slider_integer
+
+function range_slider_integer(opts) {
+
+    const state = {}
+
+    const el = document.createElement('div')
+    const shadow = el.attachShadow({mode: 'closed'})
+
+
+    // const output = document.createElement('div')
+    // output.classList.add('output')
+    // output.innerText = 0
+
+    const style = document.createElement('style')
+    style.textContent = get_theme()
+    
+    const range = rangeSlider(opts, protocol)
+    const input = input_interger(opts, protocol)
+
+    shadow.append(range, input, style)
+    return el
+
+    function protocol(message, notify) {
+        const {from} = message
+        state[from] = {value: 0, notify}
+        // console.log(message)
+        return listen
+    }
+
+    function listen (message){
+        const {from, type, data} = message
+        state[from].value = data
+        // console.log(state)
+        if (type === 'update') {
+            // output.innerText = data
+
+            var notify
+            if (from === 'range-slider-0') {
+                notify = state['input-integer-0'].notify
+
+            }
+          
+            else if (from === 'input-integer-0') {
+                notify = state['range-slider-0'].notify
+            }
+            notify({type, data})
+        }
+
+    }
+}
+
+function get_theme() {
+    return`
+    :host{
+        display: grid;
+        /* justify-content: space-between; */
+        height: 64px;
+        grid-template-columns: 14fr 2fr;
+        align-items: center;
+        justify-items: center;
+    }    
+    `
+}
+
+
+},{"input-integer_01":2,"range-slider-david_ui":3}]},{},[1]);
